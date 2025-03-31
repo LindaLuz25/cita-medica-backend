@@ -35,7 +35,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(http -> {
                     http.requestMatchers("/auth/**").permitAll();
-                    http.requestMatchers(HttpMethod.GET, "/method/get").hasAuthority("PATIENT");
+                    http.requestMatchers("/api/**").permitAll();
+                    http.requestMatchers(HttpMethod.GET, "/method/get").hasAuthority("ROLE_PATIENT");
                     http.anyRequest().denyAll();
                 }).addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class).build();
     }

@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.citamedica.salud.citamedica.dto.AuthCreateUserRequest;
 import com.citamedica.salud.citamedica.dto.AuthLoginRequest;
 import com.citamedica.salud.citamedica.dto.AuthResponse;
+import com.citamedica.salud.citamedica.models.UserEntity;
 import com.citamedica.salud.citamedica.service.UserDetailsServiceImpl;
 
 import jakarta.validation.Valid;
@@ -24,6 +26,12 @@ public class AuthenticationController {
     @PostMapping("/log-in")
     public ResponseEntity<AuthResponse> login(@RequestBody @Valid AuthLoginRequest entity) {
         return new ResponseEntity<>(this.userDetailsService.loginUser(entity), HttpStatus.OK);
+    }
+
+    @PostMapping("/sign-in")
+    public ResponseEntity<AuthResponse> register(@RequestBody @Valid UserEntity entity) {
+
+        return new ResponseEntity<>(this.userDetailsService.createUser(entity), HttpStatus.CREATED);
     }
 
 }

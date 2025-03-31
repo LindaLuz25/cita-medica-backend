@@ -10,6 +10,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -62,27 +63,24 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                                 authorityList);
         }
 
-        public AuthResponse createUser(AuthCreateUserRequest createUserRequest){
-                String username = createUserRequest.username();
-                String password = createUserRequest.password();
-                String dni = createUserRequest.dni();
-                String name = createUserRequest.name();
-                String email = createUserRequest.email();
+        public AuthResponse createUser(UserEntity createUserRequest) {
+                String username = createUserRequest.getUsername();
+                UserEntity newUser = userService.create(createUserRequest);
 
-                List<String> roleRequest = createUserRequest.roleRequest().roleListName();
 
-                Set<RoleEntity> roleEntityList = roleRepository.findRoleEntitiesByRoleEnumIn(roleRequest).stream().collect(Collectors.toSet());
-
-                if(roleEntityList.isEmpty()){
-                        throw new IllegalArgumentException("The role specified does not exist");
-                }
-
-                UserEntity userEntity = UserEntity.builder().username(username).name(name).email(email).roles(roleEntityList).dni(dni).password(passwordEncoder.encode(password)).build();
-
-                UserEntity userSaved = userRepository.save(userEntity);
+                UserEntity userSaved = userRepository.save(newUser);
 
                 ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                return null;
+
+                userSaved.getRoles().forEach(role -> authorities
+                                .add(new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name()))));
+
+                Authentication authentication = new UsernamePasswordAuthenticationToken(userSaved, null, authorities);
+
+                String accessToken = jwtUtils.createToken(authentication);
+
+                AuthResponse authResponse = new AuthResponse(username, "User created succesfully", accessToken, true);
+                return authResponse;
         }
 
         public AuthResponse loginUser(AuthLoginRequest authLoginRequest) {
