@@ -5,12 +5,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.citamedica.salud.citamedica.dto.AuthCreateUserRequest;
+import com.citamedica.salud.citamedica.dto.AuthCreateUserResponse;
 import com.citamedica.salud.citamedica.dto.AuthLoginRequest;
 import com.citamedica.salud.citamedica.dto.AuthResponse;
 import com.citamedica.salud.citamedica.models.RoleEntity;
@@ -41,14 +43,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         private PasswordEncoder passwordEncoder;
 
         @Autowired
-        private RoleRepository roleRepository;
+        private UserRepository userRepository;
 
         @Autowired
-        private UserRepository userRepository;
+        private RoleRepository roleRepository;
 
         @Override
         public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                UserEntity userEntity = userRepository.findUserEntityByUsername(username)
+                UserEntity userEntity = userRepository.findByUsername(username)
                                 .orElseThrow(() -> new UsernameNotFoundException(
                                                 "El usuario " + username + " no existe"));
                 List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
@@ -63,24 +65,28 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                                 authorityList);
         }
 
-        public AuthResponse createUser(UserEntity createUserRequest) {
-                String username = createUserRequest.getUsername();
-                UserEntity newUser = userService.create(createUserRequest);
+        public AuthCreateUserResponse createUser(AuthCreateUserRequest createUserRequest) throws BadRequestException {
+                try {
+                        List<String> roleRequest = createUserRequest.roleRequest().roleListName();
+                        Set<RoleEntity> roleEntityList = roleRepository.findRoleEntitiesByRoleEnumIn(roleRequest)
+                                        .stream().collect(Collectors.toSet());
 
+                        UserEntity userEntity = UserEntity.builder()
+                                        .name(createUserRequest.name())
+                                        .dni(createUserRequest.dni())
+                                        .email(createUserRequest.email())
+                                        .password(createUserRequest.password())
+                                        .username(createUserRequest.username())
+                                        .password(createUserRequest.password())
+                                        .roles(roleEntityList)
+                                        .build();
+                        userService.create(userEntity);
 
-                UserEntity userSaved = userRepository.save(newUser);
-
-                ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
-
-                userSaved.getRoles().forEach(role -> authorities
-                                .add(new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name()))));
-
-                Authentication authentication = new UsernamePasswordAuthenticationToken(userSaved, null, authorities);
-
-                String accessToken = jwtUtils.createToken(authentication);
-
-                AuthResponse authResponse = new AuthResponse(username, "User created succesfully", accessToken, true);
-                return authResponse;
+                        return new AuthCreateUserResponse(userEntity.getUsername(), userEntity.getEmail(),
+                                        "User created successfully.");
+                } catch (BadCredentialsException e) {
+                        throw new BadCredentialsException("Error creating user: " + e.getMessage());
+                }
         }
 
         public AuthResponse loginUser(AuthLoginRequest authLoginRequest) {

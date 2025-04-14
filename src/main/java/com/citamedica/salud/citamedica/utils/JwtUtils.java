@@ -33,14 +33,16 @@ public class JwtUtils {
         String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
+        long millis = System.currentTimeMillis();
+
         String jwtToken = JWT.create()
                 .withIssuer(this.userGenerator)
                 .withSubject(username)
                 .withClaim("role", authorities)
                 .withIssuedAt(new Date())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 1800000))
+                .withExpiresAt(new Date(millis + 1800000)) // 30 minutes
                 .withJWTId(UUID.randomUUID().toString())
-                .withNotBefore(new Date(System.currentTimeMillis()))
+                .withNotBefore(new Date(millis))
                 .sign(algorithm);
         return jwtToken;
     }
@@ -60,13 +62,12 @@ public class JwtUtils {
 
     }
 
-    public String extractUsername (DecodedJWT decodedJWT){
+    public String extractUsername(DecodedJWT decodedJWT) {
         return decodedJWT.getSubject().toString();
     }
 
-    public Claim getSpecificClaim(DecodedJWT decodedJWT, String clainName){
+    public Claim getSpecificClaim(DecodedJWT decodedJWT, String clainName) {
         return decodedJWT.getClaim(clainName);
     }
-
 
 }

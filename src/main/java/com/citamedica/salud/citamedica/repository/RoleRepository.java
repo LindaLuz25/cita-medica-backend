@@ -10,5 +10,4 @@ import com.citamedica.salud.citamedica.models.RoleEnum;
 
 public interface RoleRepository  extends JpaRepository<RoleEntity, Long>{
     List<RoleEntity> findRoleEntitiesByRoleEnumIn(List<String> roleNames);
-    Optional<RoleEntity> findByRoleEnum(RoleEnum role);
 }

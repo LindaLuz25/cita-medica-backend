@@ -19,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.citamedica.salud.citamedica.config.filters.JwtTokenValidator;
+import com.citamedica.salud.citamedica.controllers.AppointmentController;
 import com.citamedica.salud.citamedica.service.UserDetailsServiceImpl;
 import com.citamedica.salud.citamedica.utils.JwtUtils;
 
@@ -26,6 +27,7 @@ import com.citamedica.salud.citamedica.utils.JwtUtils;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
     @Autowired
     private JwtUtils jwtUtils;
 
@@ -35,8 +37,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(http -> {
                     http.requestMatchers("/auth/**").permitAll();
-                    http.requestMatchers("/api/**").permitAll();
-                    http.requestMatchers(HttpMethod.GET, "/method/get").hasAuthority("ROLE_PATIENT");
+                    http.requestMatchers(HttpMethod.PUT, "/api/users").hasAuthority("ROLE_PATIENT");
+                    http.requestMatchers("/api/appointments/**").hasAuthority("ROLE_PATIENT");
+                    http.requestMatchers("/api/users/**").hasAuthority("ROLE_ADMIN");
+                    http.requestMatchers("/api/doctors/**").hasAuthority("ROLE_ADMIN");
+                    http.requestMatchers("/method/**").hasAuthority("ROLE_INVITED");
                     http.anyRequest().denyAll();
                 }).addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class).build();
     }

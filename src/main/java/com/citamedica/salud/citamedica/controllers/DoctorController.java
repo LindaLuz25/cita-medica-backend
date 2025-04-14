@@ -34,21 +34,21 @@ public class DoctorController {
         return doctorService.getAll();
     }
 
-    // @GetMapping("/{id}")
-    // public ResponseEntity<Doctor> getDoctorById(@PathVariable Long id) {
-    //     return ResponseEntity.ok(doctorService.getById(id));
-    // }
+    @GetMapping("/{id}")
+    public ResponseEntity<DoctorEntity> getDoctorById(@PathVariable Long id) {
+        return ResponseEntity.ok(doctorService.getById(id));
+    }
 
-    // @PutMapping("/{id}")
-    // public ResponseEntity<Doctor> updateDoctor(@PathVariable Long id, @RequestBody Doctor doctor) {
-    //     return ResponseEntity.ok(doctorService.update(id, doctor));
-    // }
+    @PutMapping("/{id}")
+    public ResponseEntity<DoctorEntity> updateDoctor(@PathVariable Long id, @RequestBody DoctorEntity doctor) {
+        return ResponseEntity.ok(doctorService.update(id, doctor));
+    }
 
-    // @DeleteMapping("/{id}")
-    // public ResponseEntity<Void> deleteDoctor(@PathVariable Long id) {
-    //     boolean hasRemoved = doctorService.delete(id);
-    //     return hasRemoved ?
-    //     ResponseEntity.noContent().build():
-    //     ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    // }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDoctor(@PathVariable Long id) {
+        boolean hasRemoved = doctorService.delete(id);
+        return hasRemoved ?
+        ResponseEntity.noContent().build():
+        ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
 }

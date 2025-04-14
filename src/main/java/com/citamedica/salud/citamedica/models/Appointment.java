@@ -21,14 +21,14 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "date", nullable = false)
+    @Column(name = "date", nullable = true)
     private LocalDate date;
 
     @Column(name = "description", nullable = false, length = 250)
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private UserEntity user;
 
     @ManyToOne

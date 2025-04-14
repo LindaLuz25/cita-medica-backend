@@ -29,21 +29,7 @@ public class UserService {
 
     @Transactional
     public UserEntity create(UserEntity user) {
-
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        // Buscar si el rol "PATIENT" existe en la base de datos
-        RoleEntity patientRole = roleRepository.findByRoleEnum(RoleEnum.PATIENT)
-                .orElseGet(() -> {
-                    // Si no existe, lo creamos y guardamos en la base de datos
-                    RoleEntity newRole = new RoleEntity();
-                    newRole.setRoleEnum(RoleEnum.PATIENT);
-                    return roleRepository.save(newRole);
-                });
-
-        // Agregar el rol al usuario
-        user.getRoles().add(patientRole);
-
         return userRepository.save(user);
     }
 

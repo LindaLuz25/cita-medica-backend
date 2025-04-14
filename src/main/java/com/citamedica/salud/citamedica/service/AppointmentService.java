@@ -1,14 +1,19 @@
 package com.citamedica.salud.citamedica.service;
 
+import java.security.Principal;
+import java.security.Security;
 import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import com.citamedica.salud.citamedica.models.Appointment;
+import com.citamedica.salud.citamedica.models.UserEntity;
 import com.citamedica.salud.citamedica.repository.AppointmentRepository;
 import com.citamedica.salud.citamedica.repository.DoctorRepository;
 import com.citamedica.salud.citamedica.repository.UserRepository;
@@ -26,38 +31,38 @@ public class AppointmentService {
     private DoctorRepository doctorRepository;
 
     @Transactional(timeout = 10, readOnly = false)
-    public Appointment insert(Appointment entity) {
-        if (entity.getUser() == null || entity.getUser().getId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario es obligatorio.");
+    public Appointment insert(Appointment entity) throws Exception {
+        try {
+
+            if (entity.getDoctor() == null || entity.getDoctor().getId() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El doctor es obligatorio.");
+            }
+
+            entity.setDate(LocalDate.now());
+
+            var username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+            var user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+            var doctor = doctorRepository.findById(entity.getDoctor().getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor no encontrado"));
+
+            entity.setUser(user);
+            entity.setDoctor(doctor);
+
+            return appointmentRepository.save(entity);
+        } catch (Exception e) {
+            throw new Exception(e);
         }
-
-        if (entity.getDoctor() == null || entity.getDoctor().getId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El doctor es obligatorio.");
-        }
-
-        if (entity.getDate() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de la cita es obligatoria.");
-        }
-
-        if (entity.getDate().isBefore(LocalDate.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de la cita no puede ser en el pasado.");
-        }
-
-        var user = userRepository.findById(entity.getUser().getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-
-        var doctor = doctorRepository.findById(entity.getDoctor().getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor no encontrado"));
-
-        entity.setUser(user);
-        entity.setDoctor(doctor);
-
-        return appointmentRepository.save(entity);
     }
 
     @Transactional(readOnly = true)
     public List<Appointment> getAll() {
-        return appointmentRepository.findAll();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+        return appointmentRepository.findByUser(user);
     }
 
     @Transactional(readOnly = true)

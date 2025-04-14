@@ -59,19 +59,18 @@ public class UserEntity implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
+
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    // cascade:si eliminamos el usuario se elimina todas sus citas
-    // fetch:las citas solo se cargan su son necesarias
+
     private List<Appointment> appointments;
 
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @ManyToMany( fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleEntity> roles = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        UserEntity userEntity = new UserEntity();
 
         return roles.stream().map(role -> new SimpleGrantedAuthority(role.getRoleEnum().name()))
                 .collect(Collectors.toList());

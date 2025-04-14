@@ -22,11 +22,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping
-    public UserEntity createUser(@RequestBody UserEntity user) {
-        return userService.create(user);
-    }
-
     @GetMapping
     public List<UserEntity> getAllUsers() {
         return userService.getAll();

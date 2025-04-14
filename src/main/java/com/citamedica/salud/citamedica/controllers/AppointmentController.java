@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +28,9 @@ public class AppointmentController {
             var result = appointmentService.insert(request);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();        }
+            System.err.println("Error creating appointment: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping
@@ -36,13 +38,13 @@ public class AppointmentController {
         return appointmentService.getAll();
     }
 
-    // @GetMapping("/{id}")
-    // public Appointment getAppointmentById(@PathVariable Long id) {
-    //     return appointmentService.getById(id);
-    // }
+    @GetMapping("/{id}")
+    public Appointment getAppointmentById(@PathVariable Long id) {
+        return appointmentService.getById(id);
+    }
 
-    // @DeleteMapping("/{id}")
-    // public boolean deleteAppointment(@PathVariable Long id) {
-    //     return appointmentService.delete(id);
-    // }
+    @DeleteMapping("/{id}")
+    public boolean deleteAppointment(@PathVariable Long id) {
+        return appointmentService.delete(id);
+    }
 }
