@@ -11,7 +11,6 @@ import com.citamedica.salud.citamedica.dto.AuthCreateUserRequest;
 import com.citamedica.salud.citamedica.dto.AuthCreateUserResponse;
 import com.citamedica.salud.citamedica.dto.AuthLoginRequest;
 import com.citamedica.salud.citamedica.dto.AuthResponse;
-import com.citamedica.salud.citamedica.models.UserEntity;
 import com.citamedica.salud.citamedica.service.UserDetailsServiceImpl;
 
 import jakarta.validation.Valid;

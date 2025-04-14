@@ -1,7 +1,5 @@
 package com.citamedica.salud.citamedica.service;
 
-import java.security.Principal;
-import java.security.Security;
 import java.time.LocalDate;
 import java.util.List;
 
